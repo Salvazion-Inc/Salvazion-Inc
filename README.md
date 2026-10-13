@@ -19,6 +19,8 @@ Abre este CLI en esta carpeta.
 
 ## Tablero
 
-- [Tablero](dashboard/index.html) — oferta, precio y operación de Salvazion, Kaenz y Mapucoin. Es la instantánea del 5 de octubre de 2026 que estaba en el escritorio. No es una fuente de ventas en vivo. El canon manda sobre la marca y el propósito.
+El tablero en vivo está en [salvazion.org/dashboard](https://salvazion.org/dashboard). Entra con la cuenta de un fundador. Lee el catálogo público de Kaenz y Mapucoin, el archivo de Salvazion y el dólar observado. Las ventas siguen en Stripe. El canon manda sobre la marca y el propósito.
+
+- [Instantánea del 5 de octubre de 2026](dashboard/index.html) — copia del escritorio, para trabajar en el CLI.
 
 Un cambio de código se commitea dentro del proyecto. Este repo guarda el canon y el commit de cada proyecto.
