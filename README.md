@@ -1,6 +1,6 @@
 # Salvazion Inc.
 
-Repositorio de la empresa. El canon es la fuente de verdad del propósito y de los límites de cada producto. Los tres proyectos siguen en sus propios repositorios y despliegan desde ahí.
+Repositorio de la empresa: https://github.com/Salvazion-Inc/Salvazion-Inc. El canon es la fuente de verdad del propósito y de los límites de cada producto. Los tres proyectos siguen en sus propios repositorios y despliegan desde ahí.
 
 Abre este CLI en esta carpeta.
 
