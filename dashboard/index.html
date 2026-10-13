@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#090b10" />
+<title>Tablero · Salvazion, Kaenz y Mapucoin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Outfit:wght@360;480;560&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #090b10;
+    --ink: #f4f0e6;
+    --muted: #a39c91;
+    --faint: #746e66;
+    --line: rgba(244, 240, 230, 0.12);
+    --line-strong: rgba(244, 240, 230, 0.22);
+    --card: #12161f;
+    --card-2: #181d28;
+    --salva: #8fd99a;
+    --kaenz: #3ec6ef;
+    --mapu: #ff5d5d;
+    --gold: #e4c98a;
+    --health: #f0b39a;
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(900px 420px at 8% -10%, rgba(143, 217, 154, 0.08), transparent 60%),
+      radial-gradient(800px 380px at 100% 0%, rgba(62, 198, 239, 0.07), transparent 55%),
+      radial-gradient(700px 420px at 70% 110%, rgba(255, 93, 93, 0.06), transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    font-family: Outfit, "Segoe UI", sans-serif;
+    font-weight: 360;
+    letter-spacing: 0.01em;
+    line-height: 1.45;
+  }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 72px; }
+  .topline { display: flex; gap: 0; height: 3px; border-radius: 99px; overflow: hidden; margin-bottom: 28px; }
+  .topline span { flex: 1; }
+  .topline .s { background: var(--salva); }
+  .topline .k { background: var(--kaenz); }
+  .topline .m { background: var(--mapu); }
+  header.mast {
+    display: flex; justify-content: space-between; gap: 24px; align-items: flex-end;
+    margin-bottom: 22px;
+  }
+  .eyebrow {
+    margin: 0 0 6px;
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0;
+    font-family: Fraunces, Georgia, serif;
+    font-weight: 520;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+  h2 {
+    margin: 0 0 8px;
+    font-family: Fraunces, Georgia, serif;
+    font-weight: 520;
+    font-size: 1.7rem;
+    letter-spacing: -0.03em;
+  }
+  h3 { margin: 0; font-size: 1rem; font-weight: 560; }
+  .asof { margin: 0; color: var(--muted); text-align: right; max-width: 280px; font-size: 0.92rem; }
+  .note {
+    margin: 0 0 22px;
+    color: var(--muted);
+    max-width: 760px;
+    font-size: 0.98rem;
+  }
+  .tabs {
+    position: sticky; top: 0; z-index: 8;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 10px 0 14px;
+    background: linear-gradient(var(--bg), rgba(9, 11, 16, 0.92) 70%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .tab {
+    border: 1px solid var(--line);
+    background: transparent;
+    border-radius: 999px;
+    padding: 8px 14px;
+    color: var(--muted);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); background: var(--card); border-color: var(--line-strong); }
+  .dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; }
+  .dot.s { background: var(--salva); }
+  .dot.k { background: var(--kaenz); }
+  .dot.m { background: var(--mapu); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .hero-nums {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1.35fr;
+    gap: 14px;
+    margin: 8px 0 18px;
+  }
+  .plate {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 18px 18px 16px;
+    box-shadow: var(--shadow);
+    min-height: 148px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .plate .kicker { color: var(--muted); font-size: 0.82rem; letter-spacing: 0.04em; }
+  .figure {
+    font-family: Fraunces, Georgia, serif;
+    font-weight: 640;
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 10px 0 8px;
+  }
+  .figure small { font-size: 0.42em; letter-spacing: 0; color: var(--muted); margin-left: 6px; }
+  .sub { color: var(--muted); font-size: 0.9rem; }
+  .multiple { color: var(--gold); font-size: 0.86rem; margin-top: 8px; }
+  .section { margin: 28px 0; }
+  .section-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 12px; }
+  .section-head p { margin: 0; color: var(--muted); max-width: 520px; }
+  .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .cols-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; }
+  .brand-card { border-radius: 22px; padding: 18px; background: var(--card); border: 1px solid var(--line); }
+  .brand-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .brand-card a { color: var(--gold); text-decoration: none; font-size: 0.86rem; }
+  .brand-card a:hover { text-decoration: underline; }
+  .stat-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .stat-list li { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .stat-list strong { font-weight: 560; text-align: right; }
+  .read { color: var(--ink); font-size: 0.95rem; margin: 14px 0 0; }
+  .ops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .op {
+    border-radius: 16px;
+    padding: 14px;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+  }
+  .op b { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; font-weight: 520; letter-spacing: -0.03em; margin: 6px 0; }
+  .op span { color: var(--muted); font-size: 0.82rem; display: block; }
+  .warn b { color: var(--gold); }
+  .ok b { color: var(--salva); }
+  .bars { display: grid; gap: 8px; }
+  .bar-row, .land-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(140px, 190px) 1fr auto;
+    gap: 12px;
+    align-items: center;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 7px 8px;
+  }
+  .bar-row:hover, .land-row:hover, .bar-row[aria-pressed="true"] { background: rgba(255,255,255,0.03); border-color: var(--line); }
+  .bar-name { font-size: 0.92rem; }
+  .bar-name em { display: block; font-style: normal; color: var(--faint); font-size: 0.75rem; }
+  .track { height: 10px; background: rgba(244,240,230,0.08); border-radius: 99px; overflow: hidden; }
+  .fill { display: block; height: 100%; width: 0; border-radius: 99px; transition: width 0.45s ease; }
+  .fill.s { background: var(--salva); }
+  .fill.k { background: var(--kaenz); }
+  .fill.m { background: var(--mapu); }
+  .bar-val { font-variant-numeric: tabular-nums; font-size: 0.88rem; min-width: 92px; text-align: right; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip, select.chip {
+    border: 1px solid var(--line);
+    background: transparent;
+    border-radius: 999px;
+    padding: 7px 12px;
+    color: var(--muted);
+  }
+  .chip[aria-pressed="true"] { color: var(--ink); border-color: var(--line-strong); background: var(--card); }
+  .slider-card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px; }
+  input[type="range"] { width: 100%; accent-color: var(--gold); }
+  .slider-read {
+    display: flex; justify-content: space-between; gap: 12px; align-items: baseline;
+  }
+  .slider-read strong {
+    font-family: Fraunces, Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: 520;
+    letter-spacing: -0.03em;
+  }
+  .detail {
+    border-radius: 22px;
+    padding: 18px;
+    background: linear-gradient(180deg, #1a2030, #12161f);
+    border: 1px solid var(--line);
+  }
+  .detail .figure { font-size: 2.4rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: 0.8rem; }
+  .donut-wrap { display: grid; grid-template-columns: 180px 1fr; gap: 18px; align-items: center; }
+  .donut {
+    width: 168px; height: 168px; border-radius: 50%;
+    position: relative;
+  }
+  .donut::after {
+    content: "";
+    position: absolute; inset: 42px;
+    background: var(--card);
+    border-radius: 50%;
+  }
+  .donut b {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    z-index: 1;
+    font-family: Fraunces, Georgia, serif;
+    font-size: 1.7rem;
+  }
+  .legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .legend li { display: grid; grid-template-columns: 12px 1fr auto; gap: 10px; align-items: center; }
+  .sw { width: 12px; height: 12px; border-radius: 99px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .price-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .price-pair div { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th { text-align: left; color: var(--faint); font-weight: 480; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  td, th { padding: 9px 6px; border-bottom: 1px solid var(--line); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 36px; color: var(--faint); font-size: 0.82rem; }
+  footer a { color: var(--muted); }
+  @media (max-width: 900px) {
+    header.mast, .section-head, .hero-nums, .cols-3, .cols-2, .ops, .donut-wrap, .split { display: block; }
+    .asof { text-align: left; margin-top: 10px; }
+    .plate, .brand-card, .op, .slider-card, .detail { margin-bottom: 12px; }
+    .bar-row, .land-row { grid-template-columns: 1fr; gap: 4px; }
+    .hero-nums .plate:nth-child(3) { margin-top: 0; }
+    .donut { margin-bottom: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fill { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline" aria-hidden="true"><span class="s"></span><span class="k"></span><span class="m"></span></div>
+  <header class="mast">
+    <div>
+      <p class="eyebrow">Salvazion, Inc.</p>
+      <h1>Qué está listo para cobrar</h1>
+    </div>
+    <p class="asof" id="asof">Catálogo leído el 5 de octubre de 2026</p>
+  </header>
+  <p class="note">Salvazion, Kaenz y Mapucoin comparten compañía y Stripe. Este tablero mide oferta, precio y operación con el catálogo público, los deploys de producción y el dólar observado de ese día ($984,82). Web Analytics quedó activo en los tres proyectos el 5 de octubre de 2026. Este tablero todavía no grafica visitas. Conversión e ingresos siguen fuera porque no hay una fuente de ventas.</p>
+
+  <nav class="tabs" aria-label="Plataformas">
+    <button class="tab" data-view="grupo" aria-selected="true">Grupo</button>
+    <button class="tab" data-view="salvazion" aria-selected="false"><i class="dot s"></i>Salvazion</button>
+    <button class="tab" data-view="kaenz" aria-selected="false"><i class="dot k"></i>Kaenz</button>
+    <button class="tab" data-view="mapucoin" aria-selected="false"><i class="dot m"></i>Mapucoin</button>
+  </nav>
+
+  <section class="panel active" data-panel="grupo" id="panel-grupo">
+    <div class="hero-nums">
+      <article class="plate">
+        <span class="kicker">Salvazion · suscripción</span>
+        <div class="figure">US$49<small>/mes</small></div>
+        <div class="sub">US$468 al año, US$39 al mes si se paga el año.</div>
+      </article>
+      <article class="plate">
+        <span class="kicker">Mapucoin · noche mediana</span>
+        <div class="figure" id="hero-night">US$160</div>
+        <div class="sub">$158.000 CLP. La mitad de las cápsulas cobra eso o menos.</div>
+        <div class="multiple" id="hero-night-x"></div>
+      </article>
+      <article class="plate">
+        <span class="kicker">Kaenz · salida de entrada</span>
+        <div class="figure">US$2.800</div>
+        <div class="sub">Promedio del mínimo publicado en los 5 yates.</div>
+        <div class="multiple">57 meses de Premium equivalen a una salida.</div>
+      </article>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>La misma escala</h2>
+        <p>Un mes de Premium, una noche mediana y una salida al precio de entrada. La barra es lineal.</p>
+      </div>
+      <div class="bars" id="scale-bars"></div>
+    </div>
+
+    <div class="cols-3">
+      <article class="brand-card">
+        <header><h3><i class="dot s"></i> Salvazion</h3><a href="https://salvazion.org/" target="_blank" rel="noopener">salvazion.org</a></header>
+        <ul class="stat-list">
+          <li><span>Artículos</span><strong>363</strong></li>
+          <li><span>Freedom en el archivo</span><strong>68,6%</strong></li>
+          <li><span>Health en el archivo</span><strong>13,5%</strong></li>
+          <li><span>Himnos en el índice</span><strong>517</strong></li>
+        </ul>
+        <p class="read">El producto se sostiene en tres pilares. El archivo publicado se inclina a Freedom.</p>
+      </article>
+      <article class="brand-card">
+        <header><h3><i class="dot k"></i> Kaenz</h3><a href="https://kaenz.com/fleet" target="_blank" rel="noopener">kaenz.com</a></header>
+        <ul class="stat-list">
+          <li><span>Yates reservables</span><strong>5</strong></li>
+          <li><span>Huéspedes a la vez</span><strong>55</strong></li>
+          <li><span>Marinas en el mapa</span><strong>11.708</strong></li>
+          <li><span>Marinas en el checkout</span><strong>6</strong></li>
+        </ul>
+        <p class="read">El mapa es mundial. Los cinco yates con precio salen de South Florida.</p>
+      </article>
+      <article class="brand-card">
+        <header><h3><i class="dot m"></i> Mapucoin</h3><a href="https://mapucoin.com/" target="_blank" rel="noopener">mapucoin.com</a></header>
+        <ul class="stat-list">
+          <li><span>Cápsulas con tarifa</span><strong>31</strong></li>
+          <li><span>Camas publicadas</span><strong id="beds">63</strong></li>
+          <li><span>Destinos / áreas protegidas</span><strong>75 / 44</strong></li>
+          <li><span>Partners aprobados</span><strong>0</strong></li>
+        </ul>
+        <p class="read">Hay cápsula en 9 paisajes. El paisaje principal Parque Nacional tiene una sola casa.</p>
+      </article>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Operación al 5 de octubre</h2>
+        <p>Producción en Vercel, la API pública de partners y el mint en DexScreener.</p>
+      </div>
+      <div class="ops">
+        <article class="op ok"><span>Web Analytics</span><b>Activo</b><span>Salvazion, Kaenz y Mapucoin. La medición empieza con este deploy.</span></article>
+        <article class="op warn"><span>Partners Mapucoin</span><b>0</b><span>La API pública responde vacío. La portada nombra 32 operadores locales.</span></article>
+        <article class="op warn"><span>$SALVAZION</span><b>Sin par</b><span>DexScreener no lista un mercado para el mint.</span></article>
+        <article class="op"><span>Runtime, 7 días</span><b class="ok" style="color:var(--salva)">1 aviso</b><span>Kaenz y Mapucoin en cero. Salvazion: un webhook de Stripe sin firma, el 3 oct.</span></article>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Ritmo de producción</h2>
+        <p>Días desde el último deploy READY a producción. Se calcula con la fecha de este equipo.</p>
+      </div>
+      <div class="ops" id="ship-row"></div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="salvazion" id="panel-salvazion">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Plataforma · salvazion.org</p>
+        <h2>Suscripción y archivo</h2>
+      </div>
+      <p>Free abre los tres pilares con un límite diario de IA. Premium quita el límite y suma wearables en la nube.</p>
+    </div>
+    <div class="split">
+      <article class="brand-card">
+        <h3>De qué está hecho el archivo</h3>
+        <p class="sub">363 piezas en la portada, contadas por pilar.</p>
+        <div class="donut-wrap" style="margin-top:16px">
+          <div class="donut" id="donut"><b>363</b></div>
+          <ul class="legend" id="legend"></ul>
+        </div>
+      </article>
+      <article class="brand-card">
+        <h3>Precio de Premium</h3>
+        <div class="price-pair">
+          <div><span class="sub">Mes a mes</span><div class="figure">US$49</div><span class="sub">US$588 si se mantienen 12 meses.</span></div>
+          <div><span class="sub">Año por adelantado</span><div class="figure">US$468</div><span class="sub">US$39 al mes. Ahorro de US$120, un 20%.</span></div>
+        </div>
+        <ul class="stat-list" style="margin-top:16px">
+          <li><span>Idiomas de la interfaz</span><strong>3</strong></li>
+          <li><span>Biblias</span><strong>EN, ES, PT, hebreo, griego</strong></li>
+          <li><span>Himnos indexados el 30 sep</span><strong>517</strong></li>
+          <li><span>Lotes del archivo</span><strong>328 → 350 → 363</strong></li>
+        </ul>
+      </article>
+    </div>
+    <div class="cols-3" style="margin-top:14px">
+      <article class="op"><span>Último deploy</span><b id="salva-ship"></b><span>Planes Free y Premium reescritos el 3 oct.</span></article>
+      <article class="op"><span>Cobro</span><b>Stripe</b><span>El checkout de Premium ya no se detiene en el onboarding.</span></article>
+      <article class="op warn"><span>Webhook, 7 días</span><b>1</b><span>Falta STRIPE_WEBHOOK_SECRET o la firma. Ruta /api/billing/webhook.</span></article>
+    </div>
+    <p class="read" style="margin-top:18px">Health es el pilar con menos archivo: 49 piezas, frente a 249 de Freedom y 65 de Salvation. El índice de 517 himnos refuerza Salvation por otro canal.</p>
+  </section>
+
+  <section class="panel" data-panel="kaenz" id="panel-kaenz">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Marketplace · kaenz.com</p>
+        <h2>Cinco yates con precio</h2>
+      </div>
+      <p>Cada uno ofrece Commute, Tour y Special occasion, con capitán y cobro en Stripe. El mínimo publicado es el precio de entrada.</p>
+    </div>
+    <div class="cols-2">
+      <article class="slider-card">
+        <div class="slider-read">
+          <div>
+            <span class="sub">Escenario de catálogo</span>
+            <div><strong id="kaenz-gmv">US$56.000</strong></div>
+          </div>
+          <span class="sub" id="kaenz-gmv-label">4 salidas por yate</span>
+        </div>
+        <input id="kaenz-slider" type="range" min="0" max="20" value="4" aria-label="Salidas por yate en el mes" />
+        <p class="sub">Si cada yate cierra esas salidas al mínimo publicado. La suma de los cinco mínimos es US$14.000 por vuelta.</p>
+      </article>
+      <article class="detail" id="yacht-detail"></article>
+    </div>
+    <div class="section">
+      <div class="bars" id="yacht-bars"></div>
+    </div>
+    <div class="brand-card">
+      <h3>Yield del mínimo publicado</h3>
+      <table>
+        <thead>
+          <tr><th>Yate</th><th>Base</th><th class="num">Pies</th><th class="num">Huéspedes</th><th class="num">Horas</th><th class="num">Entrada</th><th class="num">Por hora</th><th class="num">Por huésped</th></tr>
+        </thead>
+        <tbody id="yacht-table"></tbody>
+      </table>
+    </div>
+    <div class="cols-3" style="margin-top:14px">
+      <article class="op"><span>Capacidad junta</span><b>55</b><span>Huéspedes si los cinco yates salen a la vez.</span></article>
+      <article class="op"><span>Checkout</span><b>6 marinas</b><span>Miami Beach, Island Gardens, Las Olas, Hollywood, Palm Beach y Brickell.</span></article>
+      <article class="op warn"><span>Mapa</span><b>11.708</b><span>Marinas y puertos. La oferta con precio sigue en South Florida.</span></article>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="mapucoin" id="panel-mapucoin">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Marketplace · mapucoin.com</p>
+        <h2>31 cápsulas con tarifa en CLP</h2>
+      </div>
+      <p>La portada muestra además 44 platos y tragos y 31 actividades. Los pagos van por Stripe. La empresa es plataforma, con partners locales.</p>
+    </div>
+    <div class="hero-nums">
+      <article class="plate"><span class="kicker">Mediana</span><div class="figure" id="med-clp"></div><div class="sub" id="med-usd"></div></article>
+      <article class="plate"><span class="kicker">Promedio</span><div class="figure" id="avg-clp"></div><div class="sub" id="avg-note"></div></article>
+      <article class="plate"><span class="kicker">Techo de una noche</span><div class="figure" id="ceil-clp"></div><div class="sub" id="ceil-usd"></div></article>
+    </div>
+    <div class="cols-2">
+      <article class="slider-card">
+        <div class="slider-read">
+          <div>
+            <span class="sub">Escenario de ocupación</span>
+            <div><strong id="occ-out"></strong></div>
+          </div>
+          <span class="sub" id="occ-label">40% de las noches del mes</span>
+        </div>
+        <input id="occ" type="range" min="0" max="100" value="40" aria-label="Ocupación del mes" />
+        <p class="sub" id="occ-help"></p>
+      </article>
+      <article class="detail" id="capsule-detail"></article>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <h2>Oferta por paisaje</h2>
+        <p>El paisaje es el primero que publica cada cápsula. Varias casas cruzan un segundo paisaje.</p>
+      </div>
+      <div class="bars" id="land-bars"></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <h2>Tarifa de cada cápsula</h2>
+        <p id="cap-count"></p>
+      </div>
+      <div class="tools" id="land-filters"></div>
+      <div class="tools">
+        <button class="chip" id="hide-polar" aria-pressed="true" type="button">Ocultar Antártica en la escala</button>
+        <select class="chip" id="sort-caps" aria-label="Orden">
+          <option value="price">Precio</option>
+          <option value="name">Nombre</option>
+          <option value="land">Paisaje</option>
+        </select>
+      </div>
+      <div class="bars" id="cap-bars"></div>
+    </div>
+    <div class="cols-3">
+      <article class="op"><span>Piso</span><b>$128.000</b><span>Cápsula Laja, Cabrero. Ríos.</span></article>
+      <article class="op"><span>Antártica</span><b>14,6%</b><span>Cápsula Polar, $890.000, es esa parte del techo de una noche.</span></article>
+      <article class="op warn"><span>Parques</span><b>1 casa</b><span>44 áreas protegidas en el mapa. Torres del Paine es la única cápsula con ese paisaje principal.</span></article>
+    </div>
+  </section>
+
+  <footer>
+    <p>Fuentes del 5 de octubre de 2026: páginas públicas de <a href="https://salvazion.org/">salvazion.org</a>, <a href="https://kaenz.com/fleet">kaenz.com/fleet</a> y <a href="https://mapucoin.com/">mapucoin.com</a> (31 fichas de cápsula y el sitemap); API <a href="https://mapucoin.com/api/partners/approved">/api/partners/approved</a>; DexScreener para el mint 2XALhx…AfUM; dólar observado en mindicador.cl; deploys y errores de runtime del equipo Vercel Salvazion. Los escenarios de ocupación y de salidas describen el catálogo publicado.</p>
+  </footer>
+</div>
+<script>
+const FX = 984.82;
+const AS_OF = new Date("2026-10-05T12:00:00-03:00");
+const ARTICLES = [
+  { name: "Freedom", n: 249, color: "#8fd99a" },
+  { name: "Salvation", n: 65, color: "#e4c98a" },
+  { name: "Health", n: 49, color: "#f0b39a" }
+];
+const SHIPS = [
+  { id: "salvazion", name: "Salvazion", at: 1790999082646, tone: "s" },
+  { id: "mapucoin", name: "Mapucoin", at: 1790265327740, tone: "m" },
+  { id: "kaenz", name: "Kaenz", at: 1790091217963, tone: "k" }
+];
+const YACHTS = [
+  { name: "SAVVY", ft: 32, guests: 8, price: 1585, hours: 3, marina: "Las Olas Marina", captain: "Nora Blake", kind: "Small · Fast" },
+  { name: "Tempest 42", ft: 42, guests: 10, price: 2235, hours: 3, marina: "Island Gardens Miami", captain: "Will Park", kind: "Fast" },
+  { name: "Pink Lady", ft: 50, guests: 12, price: 2960, hours: 4, marina: "Hollywood Marina", captain: "Marcus Cole", kind: "Luxurious" },
+  { name: "Galeon", ft: 50, guests: 13, price: 3440, hours: 4, marina: "Miami Beach Marina", captain: "Elena Ruiz", kind: "Luxurious" },
+  { name: "Amani", ft: 46, guests: 12, price: 3780, hours: 4, marina: "Palm Beach Town Docks", captain: "Mia Chen", kind: "Luxurious" }
+];
+const CAPSULES = [
+  ["Cápsula Altiplano", "Putre", ["Desiertos", "Volcanes"], 175000, 2],
+  ["Cápsula Morro", "Arica", ["Playas"], 142000, 2],
+  ["Cápsula Atacama Star", "San Pedro de Atacama", ["Desiertos"], 165000, 2],
+  ["Cápsula Humberstone", "Iquique", ["Desiertos", "Playas"], 138000, 2],
+  ["Cápsula Bahía Inglesa", "Caldera", ["Playas", "Desiertos"], 158000, 2],
+  ["Cápsula Faro", "La Serena", ["Playas"], 145000, 2],
+  ["Cápsula Elqui Observatorio", "Pisco Elqui", ["Viñedos"], 148000, 2],
+  ["Cápsula Cerro Alegre", "Valparaíso", ["Playas"], 155000, 2],
+  ["Cápsula Reñaca", "Viña del Mar", ["Playas"], 168000, 2],
+  ["Cápsula Isla Negra", "Isla Negra", ["Playas", "Bosques"], 148000, 2],
+  ["Cápsula La Campana", "Olmué", ["Bosques", "Parques Nacionales"], 132000, 2],
+  ["Cápsula Maipo", "Santiago", ["Viñedos"], 162000, 2],
+  ["Cápsula Yeso", "San José de Maipo", ["Ríos", "Nieve"], 155000, 2],
+  ["Cápsula Valle Nevado", "Lo Barnechea", ["Nieve"], 225000, 2],
+  ["Cápsula VIK", "Santa Cruz", ["Viñedos"], 152000, 2],
+  ["Cápsula Radal", "Molina", ["Ríos", "Bosques", "Parques Nacionales"], 140000, 2],
+  ["Cápsula Chillán", "Pinto", ["Nieve", "Volcanes"], 185000, 2],
+  ["Cápsula Laja", "Cabrero", ["Ríos"], 128000, 2],
+  ["Cápsula Biobío", "Concepción", ["Ríos"], 135000, 2],
+  ["Cápsula Villarrica", "Pucón", ["Volcanes", "Lagos", "Bosques"], 172000, 3],
+  ["Cápsula Llanquihue", "Puerto Varas", ["Lagos", "Volcanes"], 168000, 2],
+  ["Cápsula Puntiagudo", "Osorno", ["Volcanes"], 150000, 2],
+  ["Cápsula Rupanco", "Puerto Octay", ["Lagos", "Bosques"], 158000, 2],
+  ["Cápsula Valdiviana", "Castro", ["Bosques", "Playas"], 138000, 2],
+  ["Cápsula Mármol", "Puerto Río Tranquilo", ["Lagos"], 210000, 2],
+  ["Cápsula Futaleufú", "Futaleufú", ["Ríos", "Bosques"], 195000, 2],
+  ["Cápsula Austral", "Coyhaique", ["Bosques", "Ríos"], 188000, 2],
+  ["Cápsula Torres del Paine", "Puerto Natales", ["Parques Nacionales", "Lagos", "Nieve"], 248000, 2],
+  ["Cápsula Tongariki", "Hanga Roa", ["Playas"], 285000, 2],
+  ["Cápsula Robinson", "San Juan Bautista", ["Bosques", "Playas", "Parques Nacionales"], 320000, 2],
+  ["Cápsula Polar", "Villa Las Estrellas", ["Nieve"], 890000, 2]
+].map(([name, place, lands, price, guests]) => ({ name, place, lands, land: lands[0], price, guests }));
+
+const LAND_ORDER = ["Desiertos", "Playas", "Viñedos", "Volcanes", "Ríos", "Lagos", "Bosques", "Nieve", "Parques Nacionales"];
+const LAND_COLOR = {
+  Desiertos: "#e0a15a",
+  Playas: "#3ec6ef",
+  Viñedos: "#d36b8c",
+  Volcanes: "#e07a45",
+  Ríos: "#6db3c9",
+  Lagos: "#6d8fd6",
+  Bosques: "#8fb56a",
+  Nieve: "#d5dbe3",
+  "Parques Nacionales": "#8fd99a"
+};
+
+function clp(n) {
+  return "$" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+function usd(n, digits) {
+  const d = digits == null ? 0 : digits;
+  const neg = n < 0;
+  const fixed = Math.abs(n).toFixed(d);
+  const parts = fixed.split(".");
+  const body = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return "US$" + (neg ? "-" : "") + body + (parts[1] ? "," + parts[1] : "");
+}
+function median(values) {
+  const s = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+function ymd(ms) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(ms));
+}
+function daysSince(ms) {
+  const a = Date.parse(ymd(Date.now()) + "T00:00:00Z");
+  const b = Date.parse(ymd(ms) + "T00:00:00Z");
+  return Math.max(0, Math.round((a - b) / 86400000));
+}
+function fmtDay(ms) {
+  return new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "short", timeZone: "America/Santiago" }).format(new Date(ms));
+}
+
+const prices = CAPSULES.map((c) => c.price);
+const sumNight = prices.reduce((a, b) => a + b, 0);
+const med = median(prices);
+const avg = sumNight / prices.length;
+const withoutPolar = prices.filter((p) => p < 800000);
+const avgNoPolar = withoutPolar.reduce((a, b) => a + b, 0) / withoutPolar.length;
+const beds = CAPSULES.reduce((a, c) => a + c.guests, 0);
+const yachtSum = YACHTS.reduce((a, y) => a + y.price, 0);
+const yachtAvg = yachtSum / YACHTS.length;
+
+let landFilter = "Todos";
+let hidePolar = true;
+let sortKey = "price";
+let selectedCap = CAPSULES.find((c) => c.name === "Cápsula Atacama Star");
+let selectedYacht = YACHTS.find((y) => y.name === "Galeon");
+
+function setView(view) {
+  const known = ["grupo", "salvazion", "kaenz", "mapucoin"];
+  const next = known.includes(view) ? view : "grupo";
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.setAttribute("aria-selected", tab.dataset.view === next ? "true" : "false");
+  });
+  document.querySelectorAll(".panel").forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.panel === next);
+  });
+  if (location.hash !== "#" + next) history.replaceState(null, "", "#" + next);
+}
+
+function renderScale() {
+  const rows = [
+    { label: "Premium · un mes", value: 49, cls: "s", text: usd(49) },
+    { label: "Mapucoin · noche mediana", value: med / FX, cls: "m", text: usd(med / FX) },
+    { label: "Kaenz · salida de entrada", value: yachtAvg, cls: "k", text: usd(yachtAvg) }
+  ];
+  const max = yachtAvg;
+  document.getElementById("scale-bars").innerHTML = rows.map((row) => `
+    <div class="bar-row" style="cursor:default">
+      <span class="bar-name">${row.label}</span>
+      <span class="track"><span class="fill ${row.cls}" style="width:${Math.max(1.2, row.value / max * 100)}%"></span></span>
+      <span class="bar-val">${row.text}</span>
+    </div>`).join("");
+  document.getElementById("hero-night").textContent = usd(med / FX);
+  document.getElementById("hero-night-x").textContent = (med / FX / 49).toFixed(1).replace(".", ",") + " meses de Premium equivalen a esa noche.";
+}
+
+function renderShips() {
+  document.getElementById("ship-row").innerHTML = SHIPS.map((ship) => {
+    const days = daysSince(ship.at);
+    const label = days === 0 ? "Hoy" : days === 1 ? "Hace 1 día" : "Hace " + days + " días";
+    return `<article class="op"><span>${ship.name}</span><b>${label}</b><span>Último deploy READY · ${fmtDay(ship.at)}</span></article>`;
+  }).join("");
+  document.getElementById("salva-ship").textContent = fmtDay(SHIPS[0].at);
+}
+
+function renderDonut() {
+  const total = ARTICLES.reduce((a, b) => a + b.n, 0);
+  let cursor = 0;
+  const stops = ARTICLES.map((item) => {
+    const start = cursor;
+    cursor += item.n / total * 360;
+    return `${item.color} ${start}deg ${cursor}deg`;
+  }).join(", ");
+  const donut = document.getElementById("donut");
+  donut.style.background = `conic-gradient(${stops})`;
+  document.getElementById("legend").innerHTML = ARTICLES.map((item) => `
+    <li><i class="sw" style="background:${item.color}"></i><span>${item.name}</span><strong>${item.n} · ${(item.n / total * 100).toFixed(1).replace(".", ",")}%</strong></li>
+  `).join("");
+}
+
+function yachtDetail(y) {
+  const perGuest = y.price / y.guests;
+  const perHour = y.price / y.hours;
+  document.getElementById("yacht-detail").innerHTML = `
+    <span class="kicker">${y.kind}</span>
+    <h3 style="font-family:Fraunces,Georgia,serif;font-size:1.8rem;margin-top:6px">${y.name}</h3>
+    <div class="figure">${usd(y.price)}</div>
+    <p class="sub">${y.marina} · capitán ${y.captain}</p>
+    <div class="meta">
+      <span class="pill">${y.ft} ft</span>
+      <span class="pill">${y.guests} huéspedes</span>
+      <span class="pill">${y.hours} h mínimas</span>
+      <span class="pill">${usd(perHour)} / h</span>
+      <span class="pill">${usd(perGuest)} / huésped</span>
+    </div>`;
+}
+
+function renderYachts() {
+  const max = Math.max(...YACHTS.map((y) => y.price));
+  document.getElementById("yacht-bars").innerHTML = [...YACHTS].sort((a, b) => a.price - b.price).map((y) => `
+    <button class="bar-row" data-yacht="${y.name}" aria-pressed="${y.name === selectedYacht.name}">
+      <span class="bar-name">${y.name}<em>${y.marina}</em></span>
+      <span class="track"><span class="fill k" style="width:${y.price / max * 100}%"></span></span>
+      <span class="bar-val">${usd(y.price)}</span>
+    </button>`).join("");
+  document.getElementById("yacht-table").innerHTML = [...YACHTS].sort((a, b) => a.price - b.price).map((y) => `
+    <tr>
+      <td>${y.name}</td><td>${y.marina.replace(" Marina", "").replace(" Miami", "")}</td>
+      <td class="num">${y.ft}</td><td class="num">${y.guests}</td><td class="num">${y.hours}</td>
+      <td class="num">${usd(y.price)}</td>
+      <td class="num">${usd(y.price / y.hours)}</td>
+      <td class="num">${usd(y.price / y.guests)}</td>
+    </tr>`).join("");
+  yachtDetail(selectedYacht);
+  document.querySelectorAll("[data-yacht]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedYacht = YACHTS.find((y) => y.name === btn.dataset.yacht);
+      renderYachts();
+    });
+  });
+}
+
+function renderKaenzScenario() {
+  const trips = Number(document.getElementById("kaenz-slider").value);
+  document.getElementById("kaenz-gmv").textContent = usd(yachtSum * trips);
+  document.getElementById("kaenz-gmv-label").textContent = trips + (trips === 1 ? " salida por yate" : " salidas por yate");
+}
+
+function landStats() {
+  return LAND_ORDER.map((land) => {
+    const group = CAPSULES.filter((c) => c.land === land);
+    return { land, n: group.length, median: group.length ? median(group.map((c) => c.price)) : 0 };
+  });
+}
+
+function renderLands() {
+  const stats = landStats();
+  const max = Math.max(...stats.map((s) => s.n));
+  document.getElementById("land-bars").innerHTML = stats.map((s) => `
+    <button class="land-row" data-land="${s.land}" aria-pressed="${landFilter === s.land}">
+      <span class="bar-name">${s.land}<em>mediana ${clp(s.median)}</em></span>
+      <span class="track"><span class="fill" style="width:${s.n / max * 100}%;background:${LAND_COLOR[s.land]}"></span></span>
+      <span class="bar-val">${s.n} ${s.n === 1 ? "cápsula" : "cápsulas"}</span>
+    </button>`).join("");
+  document.querySelectorAll("[data-land]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      landFilter = landFilter === btn.dataset.land ? "Todos" : btn.dataset.land;
+      renderFilters();
+      renderLands();
+      renderCapsules();
+    });
+  });
+}
+
+function renderFilters() {
+  const lands = ["Todos", ...LAND_ORDER];
+  document.getElementById("land-filters").innerHTML = lands.map((land) => `
+    <button class="chip" data-filter="${land}" aria-pressed="${landFilter === land}" type="button">${land}</button>
+  `).join("");
+  document.querySelectorAll("[data-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      landFilter = btn.dataset.filter;
+      renderFilters();
+      renderLands();
+      renderCapsules();
+    });
+  });
+}
+
+function capsuleDetail(c) {
+  document.getElementById("capsule-detail").innerHTML = `
+    <span class="kicker">${c.place}</span>
+    <h3 style="font-family:Fraunces,Georgia,serif;font-size:1.8rem;margin-top:6px">${c.name}</h3>
+    <div class="figure">${clp(c.price)}</div>
+    <p class="sub">${usd(c.price / FX)} al dólar observado · hasta ${c.guests} viajeros</p>
+    <div class="meta">${c.lands.map((land) => `<span class="pill">${land}</span>`).join("")}</div>`;
+}
+
+function renderCapsules() {
+  const rows = CAPSULES.filter((c) => landFilter === "Todos" || c.land === landFilter).sort((a, b) => {
+    if (sortKey === "name") return a.name.localeCompare(b.name, "es");
+    if (sortKey === "land") return a.land.localeCompare(b.land, "es") || a.price - b.price;
+    return a.price - b.price;
+  });
+  const scaleRows = hidePolar ? rows.filter((c) => c.name !== "Cápsula Polar") : rows;
+  const max = Math.max(...(scaleRows.length ? scaleRows : rows).map((c) => c.price));
+  document.getElementById("cap-count").textContent = rows.length + (rows.length === 1 ? " cápsula en vista." : " cápsulas en vista.");
+  document.getElementById("cap-bars").innerHTML = rows.map((c) => `
+    <button class="bar-row" data-cap="${c.name}" aria-pressed="${selectedCap && selectedCap.name === c.name}">
+      <span class="bar-name">${c.name}<em>${c.place} · ${c.land}</em></span>
+      <span class="track"><span class="fill" style="width:${Math.min(100, c.price / max * 100)}%;background:${LAND_COLOR[c.land]}"></span></span>
+      <span class="bar-val">${clp(c.price)}</span>
+    </button>`).join("");
+  document.querySelectorAll("[data-cap]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedCap = CAPSULES.find((c) => c.name === btn.dataset.cap);
+      capsuleDetail(selectedCap);
+      document.querySelectorAll("[data-cap]").forEach((el) => el.setAttribute("aria-pressed", el === btn ? "true" : "false"));
+    });
+  });
+}
+
+function renderMapuHeadline() {
+  document.getElementById("beds").textContent = String(beds);
+  document.getElementById("med-clp").textContent = clp(med);
+  document.getElementById("med-usd").textContent = usd(med / FX) + " · 16ª tarifa de 31";
+  document.getElementById("avg-clp").textContent = clp(avg);
+  document.getElementById("avg-note").textContent = "Sin Antártica, " + clp(avgNoPolar) + ".";
+  document.getElementById("ceil-clp").textContent = clp(sumNight);
+  document.getElementById("ceil-usd").textContent = usd(sumNight / FX) + " si las 31 venden esa noche.";
+}
+
+function renderOccupancy() {
+  const occ = Number(document.getElementById("occ").value) / 100;
+  const month = sumNight * 30 * occ;
+  document.getElementById("occ-out").textContent = clp(month);
+  document.getElementById("occ-label").textContent = Math.round(occ * 100) + "% de las noches del mes";
+  document.getElementById("occ-help").textContent = usd(month / FX) + " al dólar observado. El mes completo del catálogo, al 100%, suma " + clp(sumNight * 30) + ".";
+}
+
+function init() {
+  renderScale();
+  renderShips();
+  renderDonut();
+  renderYachts();
+  renderKaenzScenario();
+  renderMapuHeadline();
+  renderFilters();
+  renderLands();
+  renderCapsules();
+  capsuleDetail(selectedCap);
+  renderOccupancy();
+  document.getElementById("asof").textContent = "Catálogo leído el 5 de octubre de 2026";
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => setView(tab.dataset.view));
+  });
+  document.getElementById("kaenz-slider").addEventListener("input", renderKaenzScenario);
+  document.getElementById("occ").addEventListener("input", renderOccupancy);
+  document.getElementById("hide-polar").addEventListener("click", (event) => {
+    hidePolar = !hidePolar;
+    event.currentTarget.setAttribute("aria-pressed", hidePolar ? "true" : "false");
+    renderCapsules();
+  });
+  document.getElementById("sort-caps").addEventListener("change", (event) => {
+    sortKey = event.target.value;
+    renderCapsules();
+  });
+  const fromUrl = (location.hash || "").replace("#", "") || new URLSearchParams(location.search).get("v");
+  setView(fromUrl || "grupo");
+  window.addEventListener("hashchange", () => setView(location.hash.replace("#", "")));
+}
+
+init();
+</script>
+</body>
+</html>

@@ -4,6 +4,8 @@ Esta carpeta es el repo de la empresa. Ábrela como directorio de trabajo del CL
 
 Antes de cambiar propósito, marca o textos que cruzan productos, lee `canon/purpose.md` y la ficha del producto. El enunciado oficial del propósito se copia tal cual. No lo reformules.
 
+El tablero del grupo está en `dashboard/index.html`. Es una instantánea del 5 de octubre de 2026: catálogo, precios y operación. No lo uses como cifra en vivo. El canon sigue mandando sobre marca y propósito.
+
 - **Salvazion** es la plataforma que restaura a la persona humana: Salvation, Health y Freedom, en salvazion.org.
 - **Kaenz** es la plataforma de viajes en yate (Commute, Tour, Special Occasion). No es un operador de charter.
 - **Mapucoin** es la plataforma de viajes en Chile: presupuesto, lugar, itinerario, cápsulas, gastronomía y actividades.

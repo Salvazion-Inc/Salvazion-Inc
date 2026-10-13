@@ -17,4 +17,8 @@ Abre este CLI en esta carpeta.
 - [Kaenz](canon/kaenz.md)
 - [Mapucoin](canon/mapucoin.md)
 
+## Tablero
+
+- [Tablero](dashboard/index.html) — oferta, precio y operación de Salvazion, Kaenz y Mapucoin. Es la instantánea del 5 de octubre de 2026 que estaba en el escritorio. No es una fuente de ventas en vivo. El canon manda sobre la marca y el propósito.
+
 Un cambio de código se commitea dentro del proyecto. Este repo guarda el canon y el commit de cada proyecto.
