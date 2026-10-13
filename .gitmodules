@@ -1,0 +1,9 @@
+[submodule "Salvazion"]
+	path = Salvazion
+	url = https://github.com/Salvazion-Inc/salvazion.git
+[submodule "Kaenz"]
+	path = Kaenz
+	url = https://github.com/Salvazion-Inc/kaenz.git
+[submodule "Mapucoin"]
+	path = Mapucoin
+	url = https://github.com/Salvazion-Inc/mapucoin.git
